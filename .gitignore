@@ -1,0 +1,2 @@
+/var/lib/mysql/*
+!/var/lib/mysql/.gitkeep

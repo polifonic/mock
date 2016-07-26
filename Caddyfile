@@ -1,0 +1,17 @@
+:2015 {
+
+	log stdout
+	errors stdout
+
+	gzip
+
+	fastcgi / php:9000 php
+
+	root /var/www/web
+
+	rewrite / {
+	    to {path} {path}/ /index.php?{query}
+	}
+
+	tls off
+}

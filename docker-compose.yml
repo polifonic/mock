@@ -1,0 +1,151 @@
+version: '2'
+
+services:
+    mysql_data:
+        image: busybox
+        networks:
+            - data
+        volumes:
+            - ./var/lib/mysql:/var/lib/mysql
+            - ./var/backups:/var/backups/mysql
+
+    mysql:
+        image: mysql:5.7
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        expose:
+            - "3306"
+        networks:
+            - data
+        volumes:
+            - ./etc/mysql/conf.d:/etc/mysql/conf.d
+        volumes_from:
+            - mysql_data
+
+    wikis:
+        image: busybox
+        networks:
+            - wiki
+        volumes:
+            - ./var/wikis:/polifonic/wikis
+
+    wiki_php:
+        image: polifonic/wiki:mock
+        expose:
+            - 9000
+        networks:
+            - data
+            - wiki
+        volumes:
+            - /var/www
+        volumes_from:
+            - wikis
+
+    wiki_web:
+        image: abiosoft/caddy
+        depends_on:
+            - wiki_php
+        environment:
+            - VIRTUAL_HOST=*.polifonic.dev
+            - VIRTUAL_PORT=2015
+        expose:
+            - 2015
+        links:
+            - wiki_php:php
+        networks:
+            - wiki
+            - proxy
+        volumes:
+            - ./Caddyfile:/etc/Caddyfile:ro
+        volumes_from:
+            - wiki_php
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:latest
+        environment:
+            - "PMA_ABSOLUTE_URI=http://pma.polifonic.dev"
+            - "VIRTUAL_HOST=pma.polifonic.dev"
+            - "PMA_HOST=mysql"
+        networks:
+            - data
+            - proxy
+        ports:
+            - 8029:80
+
+    admin_php:
+        image: polifonic/backend:mock
+        expose:
+            - 9000
+        networks:
+            - data
+            - admin
+        volumes:
+            - /var/www
+        volumes_from:
+            - wikis
+
+    admin_web:
+        image: abiosoft/caddy
+        depends_on:
+            - admin_php
+        environment:
+            - VIRTUAL_HOST=admin.polifonic.dev
+            - VIRTUAL_PORT=2015
+        expose:
+            - 2015
+        links:
+            - admin_php:php
+        networks:
+            - admin
+            - proxy
+        volumes:
+            - ./Caddyfile:/etc/Caddyfile:ro
+        volumes_from:
+            - admin_php
+
+    www_php:
+        image: polifonic/www:mock
+        expose:
+            - 9000
+        networks:
+            - data
+            - www
+        volumes:
+            - /var/www
+        volumes_from:
+            - wikis
+
+    www_web:
+        image: abiosoft/caddy
+        depends_on:
+            - www_php
+        environment:
+            - VIRTUAL_HOST=www.polifonic.dev, polifonic.dev
+            - VIRTUAL_PORT=2015
+        expose:
+            - 2015
+        links:
+            - www_php:php
+        networks:
+            - www
+            - proxy
+        volumes:
+            - ./Caddyfile:/etc/Caddyfile:ro
+        volumes_from:
+            - www_php
+
+    proxy:
+        image: jwilder/nginx-proxy
+        networks:
+            - proxy
+        ports:
+            - "80:80"
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+
+networks:
+    admin:
+    data:
+    www:
+    wiki:
+    proxy:
