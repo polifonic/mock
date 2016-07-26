@@ -46,7 +46,7 @@ services:
         depends_on:
             - wiki_php
         environment:
-            - VIRTUAL_HOST=*.polifonic.dev
+            - VIRTUAL_HOST=*.polifonic.dev,custom.domain.dev
             - VIRTUAL_PORT=2015
         expose:
             - 2015
@@ -120,7 +120,7 @@ services:
         depends_on:
             - www_php
         environment:
-            - VIRTUAL_HOST=www.polifonic.dev, polifonic.dev
+            - VIRTUAL_HOST=www.polifonic.dev,polifonic.dev
             - VIRTUAL_PORT=2015
         expose:
             - 2015

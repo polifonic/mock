@@ -7,19 +7,20 @@ $wikis = array(
 
 $host = $_SERVER['HTTP_HOST'];
 
-die($host);
 foreach ($wikis as $domain => $custom_host) {
-	if ($custom_host == $host) {
+	if ($host == $custom_host) {
 		$wiki = $domain;
 		break;
-	} else if ($host == $domain.'polifonic.dev') {
+	} else if ($host == $domain.'.polifonic.dev') {
 		$wiki = $domain;
+		break;
 	}
+}
 
-	if (!isset($wiki)) {
-		header('Location: http://www.polifonic.dev');
-		die();
-	}
+if (!isset($wiki)) {
+	header('Location: http://www.polifonic.dev');
+	die();
+}
 ?>
 
 <html>
